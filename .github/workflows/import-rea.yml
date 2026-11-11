@@ -1,0 +1,31 @@
+name: Import REA source
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/import-rea.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out destination repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Import upstream source and complete Git history
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote add upstream https://github.com/morluto/rea.git
+          git fetch --no-tags upstream main
+          git merge --allow-unrelated-histories --no-commit -s ours upstream/main
+          git read-tree --reset -u upstream/main
+          git commit -m "chore: import morluto/rea source"
+          git push origin HEAD:main
